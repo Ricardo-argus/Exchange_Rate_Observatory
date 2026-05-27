@@ -86,7 +86,7 @@ OBSERVATORIO_CAMBIO/
 │       ├── processamento_dol.py
 │       ├── processamento_euro.py
 │       └── variacoes_cambio.py
-        
+```        
 
 ## Airflow DAGS
 
@@ -108,6 +108,4 @@ Modelos para obter media de valores, variações de compra e venda, obter revenu
 
 ## EXCEL VBA MACROS
 
-Uma Planilha excel fará a atualização do link da API do BACEN para atualizar diariamente o câmbio do euro e dolar, além de importar tabelas, criar gráficos e tabelas dinâmicas com as tabelas criadas pelo orquestrador utilizando os scripts python.
-
-
+Uma Planilha excel fará a atualização do link da API do BACEN para atualizar diariamente o câmbio do euro e dolar usando Macros e linkando ao banco de dados Postgres através do ODBC installer, além de importar tabelas, criar gráficos e tabelas dinâmicas com as tabelas criadas pelo orquestrador utilizando os scripts python.
