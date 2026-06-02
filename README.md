@@ -1,6 +1,6 @@
 # OBSERVATORIO_CAMBIO
 
-##  Visão Geral
+##  Overview
 O **Observatório de Câmbio** é um projeto de análise e monitoramento de variações cambiais, integrando **Airflow** para orquestração de pipelines e **dbt (Data Build Tool)** para transformação e modelagem de dados.  
 O objetivo é fornecer insights sobre taxas de câmbio, detectar anomalias e gerar métricas consolidadas em diferentes camadas de dados (**silver** e **gold**).
 
@@ -14,6 +14,8 @@ O objetivo é fornecer insights sobre taxas de câmbio, detectar anomalias e ger
 - **dbt-core**
 - **docker personal**
 - **Banco de dados PostgreSQL**
+- **Microsoft Excel**
+- **ODBC 3.9 for Postgres** 
 
 ### Passos de Setup
 1. Clone o repositório:
@@ -27,13 +29,12 @@ bash
 
 python -m venv venv
 source venv/bin/activate   # Linux/Mac
-venv\Scripts\activate      # Windows
-
 
 # Instale as dependências:
 
 pip install -r requirements.txt
 
+obs: Caso as imagens já estejam armazenadas no Dockerfile, não se torna necessário o uso do requirements
 
 # Configurações
 
@@ -85,7 +86,7 @@ OBSERVATORIO_CAMBIO/
 │       ├── processamento_dol.py
 │       ├── processamento_euro.py
 │       └── variacoes_cambio.py
-        
+```        
 
 ## Airflow DAGS
 
@@ -105,5 +106,6 @@ Macros para validação de duplicados, preencher valores nulos com COALESCE (0) 
 
 Modelos para obter media de valores, variações de compra e venda, obter revenue entre outros...
 
+## EXCEL VBA MACROS
 
-
+Uma Planilha excel fará a atualização do link da API do BACEN para atualizar diariamente o câmbio do euro e dolar usando Macros e linkando ao banco de dados Postgres através do ODBC installer, além de importar tabelas, criar gráficos e tabelas dinâmicas com as tabelas criadas pelo orquestrador utilizando os scripts python.
