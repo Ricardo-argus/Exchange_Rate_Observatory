@@ -20,6 +20,8 @@ def process_euro_data():
     df["variacao_pct_venda"] = (df["cotacao_venda"].pct_change() * 100).round(2)
     df["variacao_pct_compra"] = (df["cotacao_compra"].pct_change() * 100).round(2)
 
+    df = df.fillna(0)
+
     rows = df.to_dict(orient="records")
 
     metadata = sa.MetaData()
@@ -42,8 +44,11 @@ def process_euro_data():
 
     metadata.create_all(engine)  # cria a tabela se não existir
 
-    # Faz o upsert
     with engine.begin() as conn:
+        # Apaga dados antigos
+        conn.execute(sa.text("DELETE FROM silver_euro_cambio"))
+
+        # Faz o Upsert
         stmt = insert(silver_euro).values(rows)
         stmt = stmt.on_conflict_do_update(
             index_elements=["datahoracotacao"],

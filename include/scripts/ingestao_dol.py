@@ -3,6 +3,7 @@ import requests
 import sqlalchemy as sa
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import insert
+import pandas as pd
 
 
 # Usa a mesma string de conexão definida no docker-compose
@@ -28,9 +29,11 @@ metadata.create_all(engine)
 
 def ingest_data():
 
-    url = (
-        "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='USD'&@dataInicial='01-01-2022'&@dataFinalCotacao='01-01-2026'&$top=1000&$filter=tipoBoletim%20eq%20'Fechamento'&$orderby=dataHoraCotacao&$format=json&$select=cotacaoCompra,cotacaoVenda,dataHoraCotacao,tipoBoletim"
-    )
+    df = pd.read_excel("/opt/airflow/excel_analyses/Advanced_Imported_Analyses.xlsm", sheet_name="Main_Macros", header=None, engine="openpyxl")
+    
+    # coluna'url_API'
+    url = df.iloc[30, 2]
+
     response = requests.get(url).json()
 
     rows = []
@@ -41,13 +44,18 @@ def ingest_data():
             "datahoracotacao": datetime.strptime(item["dataHoraCotacao"], "%Y-%m-%d %H:%M:%S.%f"),
             "tipoboletim": str(item["tipoBoletim"])
         })
+    
+    # Carrega a tabela
+    table = sa.Table("bronze_dol_cambio", sa.MetaData(), autoload_with=engine)
 
-    # Faz o upsert usando datahoracotacao como chave única
     with engine.begin() as conn:
-        table = sa.Table("bronze_dol_cambio", sa.MetaData(), autoload_with=engine)
+        # Apaga os registros antigos
+        conn.execute(sa.text("DELETE FROM bronze_dol_cambio"))
+
+        # Faz o upsert (insere e atualiza se já existir)
         stmt = insert(table).values(rows)
         stmt = stmt.on_conflict_do_update(
-            index_elements=["datahoracotacao"],  # precisa ser UNIQUE na tabela
+            index_elements=["datahoracotacao"],
             set_={
                 "cotacao_compra": stmt.excluded.cotacao_compra,
                 "cotacao_venda": stmt.excluded.cotacao_venda,

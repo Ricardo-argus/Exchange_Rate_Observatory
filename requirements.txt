@@ -1,1 +1,10 @@
 # Lista de libs: pandas, sqlalchemy, requests, dbt-postgres
+pandas
+sqlalchemy
+requests
+dbt-postgres
+openpyxl
+seaborn
+matplotlib
+numpy
+psycopg2-binary

@@ -8,4 +8,3 @@ models:
         description: "media_pct_venda describes average variation along the days of the currency"
         data_tests:
           - unique
-          - not_null

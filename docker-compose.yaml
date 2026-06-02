@@ -21,7 +21,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   airflow-webserver:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     restart: always
     depends_on:
       - postgres
@@ -36,12 +38,16 @@ services:
       - ./dags:/opt/airflow/dags
       - ./include:/opt/airflow/include
       - ./logs:/opt/airflow/logs
+      - ./charts:/opt/airflow/output_charts
+      - ./excel_analyses:/opt/airflow/excel_analyses
     ports:
       - "8080:8080"
     command: webserver
 
   airflow-scheduler:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     restart: always
     depends_on:
       - postgres
@@ -55,6 +61,8 @@ services:
       - ./dags:/opt/airflow/dags
       - ./include:/opt/airflow/include
       - ./logs:/opt/airflow/logs
+      - ./charts:/opt/airflow/output_charts
+      - ./excel_analyses:/opt/airflow/excel_analyses
     command: scheduler
 
   dbt:
@@ -64,7 +72,7 @@ services:
     volumes:
       - .:/usr/app
     working_dir: /usr/app
-    command: ["bash"]
+    command: ["dbt", "run"]
 
 volumes:
   postgres_data:

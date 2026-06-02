@@ -13,7 +13,10 @@ CONN_STR = (
 )
 engine = sa.create_engine(CONN_STR)
 
-def graph_py():
+def graph_py(output_dir="/opt/airflow/output_charts"):
+
+    os.makedirs(output_dir, exist_ok=True)
+
     df = pd.read_sql("SELECT * FROM public.cambio_eur_usd ORDER BY id DESC", engine)
 
     #Grafico de linha cotacao dol
@@ -22,7 +25,7 @@ def graph_py():
     plt.title("Cotação de Venda do Dólar ao longo do tempo")
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig("cotacao_vendadol.png")
+    plt.savefig(os.path.join(output_dir, "cotacao_vendadol.png"))
     plt.close()
 
     #Histograma variacao
@@ -30,10 +33,13 @@ def graph_py():
     sns.histplot(df["variacao_compra_moeda"], bins=30, kde=True)
     plt.title("Distribuição da variação de compra da moeda")
     plt.tight_layout()
-    plt.savefig("hist_variacao.png")
+    plt.savefig(os.path.join(output_dir, "hist_variacao.png"))
     plt.close()
 
-def graph_sql():
+def graph_sql(output_dir="/opt/airflow/output_charts"):
+
+    os.makedirs(output_dir, exist_ok=True)
+
     query_sql = """
         SELECT DATE_TRUNC('month', datahoracotacao) AS mes,
             AVG(cotacao_venda_dol) AS media_dolar,
@@ -50,6 +56,6 @@ def graph_sql():
     plt.title("Média mensal das cotações de venda (USD vs EUR)")
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig("grafico_medias_mensais.png")
+    plt.savefig(os.path.join(output_dir, "grafico_medias_mensais.png"))
     plt.close()
 

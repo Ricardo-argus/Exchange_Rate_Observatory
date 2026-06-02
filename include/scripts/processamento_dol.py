@@ -20,6 +20,8 @@ def process_dol_data():
     df["variacao_pct_venda"] = (df["cotacao_venda"].pct_change() * 100).round(2)
     df["variacao_pct_compra"] = (df["cotacao_compra"].pct_change() * 100).round(2)
 
+    df = df.fillna(0)  
+
     rows = df.to_dict(orient="records")
 
     metadata = sa.MetaData()
@@ -40,10 +42,14 @@ def process_dol_data():
         extend_existing=True
     )
 
-    metadata.create_all(engine)  # cria a tabela se não existir
+    # cria a tabela se não existir
+    metadata.create_all(engine)  
+
+    with engine.begin() as conn:
+        # Apaga os dados antigos
+        conn.execute(sa.text("DELETE FROM silver_dol_cambio"))
 
     # Faz o upsert
-    with engine.begin() as conn:
         stmt = insert(silver_dol).values(rows)
         stmt = stmt.on_conflict_do_update(
             index_elements=["datahoracotacao"],
