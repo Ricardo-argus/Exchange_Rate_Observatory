@@ -7,6 +7,8 @@ from include.scripts.ingestao_dol import ingest_data
 from include.scripts.ingestao_euro import ingest_euro_data
 from include.scripts.processamento_dol import process_dol_data
 from include.scripts.processamento_euro import process_euro_data
+from include.scripts.Gold_dol import gold_dol_data
+from include.scripts.Gold_euro import gold_euro_data
 from include.scripts.variacoes_cambio import joins_cambio
 from airflow.utils.task_group import TaskGroup
 
@@ -20,13 +22,15 @@ with DAG(
     with TaskGroup("pipeline_dolar") as pipeline_dolar:
         t1 = PythonOperator(task_id="ingestao_dol", python_callable = ingest_data)
         t3 = PythonOperator(task_id="processamento_dol", python_callable=process_dol_data)
-        t1 >> t3
+        t5 = PythonOperator(task_id="Gold_dol", python_callable=gold_dol_data)
+        t1 >> t3 >> t5
 
 
     with TaskGroup("pipeline_euro") as pipeline_euro:
         t2 = PythonOperator(task_id="ingestao_euro", python_callable = ingest_euro_data)
         t4 = PythonOperator(task_id="processamento_euro", python_callable=process_euro_data)
-        t2 >> t4
+        t6 = PythonOperator(task_id ="Gold_euro", python_callable= gold_euro_data)
+        t2 >> t4 >> t6
 
     join_cambios = PythonOperator(task_id="join_cambial", python_callable=joins_cambio)
 
