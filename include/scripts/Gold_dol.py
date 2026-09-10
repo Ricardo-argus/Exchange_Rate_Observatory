@@ -14,11 +14,14 @@ def gold_dol_data():
     #Lê dados da tabela Silver dolar cambio
     df = pd.read_sql("SELECT * FROM public.silver_dol_cambio ORDER BY datahoracotacao", engine)
 
+    # Garante parsing de datetime antes de extrair data e hora
+    df["datahoracotacao"] = pd.to_datetime(df["datahoracotacao"])
+
     # Modificar Coluna Datahoracotacao > Data
     df["data_publicacao"] = df["datahoracotacao"].dt.date
 
     # Criar nova coluna para armazenar Hora
-    df["hora_publicacao"] = df["datahoracotacao"].dt.time
+    df["hora_publicacao"] = df["datahoracotacao"].dt.strftime("%H:%M:%S")
 
     # Estipular 2 casas decimais para Cotacoes
     df['cotacao_compra'] = df['cotacao_compra'].round(2)
@@ -33,9 +36,12 @@ def gold_dol_data():
     # eliminar coluna antiga
     df = df.drop(columns=["datahoracotacao"])
 
+    #eliminar registros incosistentes de boletim
+    df = df.drop_duplicates(subset=["data_publicacao", "hora_publicacao"], keep="last")
+
     # Selecionar Colunas
     df = df[[
-    "id", "data_publicacao", "hora_publicacao", "cotacao_compra", "cotacao_venda",
+    "data_publicacao", "hora_publicacao", "cotacao_compra", "cotacao_venda",
     "variacao_venda", "variacao_compra", "variacao_pct_venda", "variacao_pct_compra",
     "tipoboletim"
     ]]
