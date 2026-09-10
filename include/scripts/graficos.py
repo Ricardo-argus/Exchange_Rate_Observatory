@@ -21,7 +21,7 @@ def graph_py(output_dir="/opt/airflow/output_charts"):
 
     #Grafico de linha cotacao dol
 
-    sns.lineplot(data=df, x="datahoracotacao", y="cotacao_venda_dol")
+    sns.lineplot(data=df, x="data_publicacao", y="cotacao_venda_dol")
     plt.title("Cotação de Venda do Dólar ao longo do tempo")
     plt.xticks(rotation=45)
     plt.tight_layout()
@@ -41,21 +41,24 @@ def graph_sql(output_dir="/opt/airflow/output_charts"):
     os.makedirs(output_dir, exist_ok=True)
 
     query_sql = """
-        SELECT DATE_TRUNC('month', datahoracotacao) AS mes,
+        SELECT DATE_TRUNC('month', data_publicacao) AS mes,
             AVG(cotacao_venda_dol) AS media_dolar,
             AVG(cotacao_venda_euro) AS media_euro
         FROM public.cambio_eur_usd
+        WHERE data_publicacao >= '2025-09-01'
         GROUP by mes
         ORDER BY mes
     """
     df = pd.read_sql(query_sql, engine)
 
-    #Grafico de barras comparando medias mensais
+    # Formata a coluna 'mes' para apenas Ano-Mês ou Mês/Ano
+    df["mes"] = pd.to_datetime(df["mes"]).dt.strftime("%Y-%m")
 
-    df.plot(x="mes", y =["media_dolar", "media_euro"], kind="bar")
+    # Plota o gráfico (xlabel="" remove a legenda 'mes' do rodapé)
+    ax = df.plot(x="mes", y=["media_dolar", "media_euro"], kind="bar", xlabel="")
+    
     plt.title("Média mensal das cotações de venda (USD vs EUR)")
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "grafico_medias_mensais.png"))
     plt.close()
-

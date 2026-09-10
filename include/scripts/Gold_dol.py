@@ -15,10 +15,10 @@ def gold_dol_data():
     df = pd.read_sql("SELECT * FROM public.silver_dol_cambio ORDER BY datahoracotacao", engine)
 
     # Modificar Coluna Datahoracotacao > Data
-    df["Data_Publicacao"] = df["datahoracotacao"].dt.date
+    df["data_publicacao"] = df["datahoracotacao"].dt.date
 
     # Criar nova coluna para armazenar Hora
-    df["Hora_Publicacao"] = df["datahoracotacao"].dt.time
+    df["hora_publicacao"] = df["datahoracotacao"].dt.time
 
     # Estipular 2 casas decimais para Cotacoes
     df['cotacao_compra'] = df['cotacao_compra'].round(2)
@@ -35,7 +35,7 @@ def gold_dol_data():
 
     # Selecionar Colunas
     df = df[[
-    "id", "Data_Publicacao", "Hora_Publicacao", "cotacao_compra", "cotacao_venda",
+    "id", "data_publicacao", "hora_publicacao", "cotacao_compra", "cotacao_venda",
     "variacao_venda", "variacao_compra", "variacao_pct_venda", "variacao_pct_compra",
     "tipoboletim"
     ]]
@@ -51,13 +51,14 @@ def gold_dol_data():
         sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
         sa.Column("cotacao_compra", sa.Numeric(10,2), nullable=False),
         sa.Column("cotacao_venda", sa.Numeric(10,2), nullable=False),
-        sa.Column("Data_Publicacao", sa.Date, nullable=False),
-        sa.Column("Hora_Publicacao", sa.Time, nullable=False),
+        sa.Column("data_publicacao", sa.Date, nullable=False),
+        sa.Column("hora_publicacao", sa.Time, nullable=False),
         sa.Column("variacao_venda", sa.Numeric(10,3)),
         sa.Column("variacao_compra", sa.Numeric(10,3)),
         sa.Column("variacao_pct_venda", sa.Numeric(10,3)),
         sa.Column("variacao_pct_compra", sa.Numeric(10,3)),
         sa.Column("tipoboletim", sa.String(50)),
+        sa.UniqueConstraint("data_publicacao", "hora_publicacao", name="uq_gold_dol_data_hora"),
         extend_existing=True
     )
 
@@ -65,13 +66,11 @@ def gold_dol_data():
     metadata.create_all(engine)
 
     with engine.begin() as conn:
-        # Apaga dados antigos
-        conn.execute(sa.text("DELETE FROM gold_dol_cambio"))
 
-    # Faz o upsert das colunas
         stmt = insert(gold_dol).values(rows)
+
         stmt = stmt.on_conflict_do_update(
-            index_elements=["Data_Publicacao", "Hora_Publicacao"],
+            index_elements=["data_publicacao", "hora_publicacao"],
             set_={
                 "cotacao_compra": stmt.excluded.cotacao_compra,
                 "cotacao_venda": stmt.excluded.cotacao_venda,
