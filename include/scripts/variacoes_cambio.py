@@ -11,17 +11,17 @@ engine = sa.create_engine(CONN_STR)
 
 def joins_cambio():
     # Lê os dados das tabelas Gold
-    df_dol = pd.read_sql("SELECT * FROM public.gold_dol_cambio ORDER BY data_publicacao", engine)
-    df_euro = pd.read_sql("SELECT * FROM public.gold_euro_cambio ORDER BY data_publicacao", engine)
+    gold_dol = pd.read_sql("SELECT * FROM public.gold_dol_cambio ORDER BY data_publicacao", engine)
+    gold_euro = pd.read_sql("SELECT * FROM public.gold_euro_cambio ORDER BY data_publicacao", engine)
 
     # Deleta registros duplicados de boletim + data 
-    df_dol = df_dol.drop_duplicates(subset=["data_publicacao", "tipoboletim"], keep="last")
-    df_euro = df_euro.drop_duplicates(subset=["data_publicacao", "tipoboletim"], keep="last")
+    gold_dol = gold_dol.drop_duplicates(subset=["data_publicacao", "tipoboletim"], keep="last")
+    gold_euro = gold_euro.drop_duplicates(subset=["data_publicacao", "tipoboletim"], keep="last")
 
     # Faz o merge pelo campo de data
-    df = pd.merge(
-        df_dol,
-        df_euro,
+    euro_dol = pd.merge(
+        gold_dol,
+        gold_euro,
         left_on=["data_publicacao", "tipoboletim"],
         right_on=["data_publicacao", "tipoboletim"],
         how="inner",
@@ -29,18 +29,18 @@ def joins_cambio():
     )
 
     # Seleciona e renomeia colunas
-    df = df[[
+    euro_dol = euro_dol[[
         "data_publicacao", "tipoboletim", "hora_publicacao_dol", "hora_publicacao_euro",
         "cotacao_venda_dol", "cotacao_venda_euro",
         "cotacao_compra_dol", "cotacao_compra_euro"
     ]]
 
     # Calcula variações entre moedas
-    df["variacao_compra_moeda"] = (df["cotacao_compra_dol"] - df["cotacao_compra_euro"]).round(3)
-    df["variacao_venda_moeda"] = (df["cotacao_venda_dol"] - df["cotacao_venda_euro"]).round(3)
+    euro_dol["variacao_compra_moeda"] = (euro_dol["cotacao_compra_dol"] - euro_dol["cotacao_compra_euro"]).round(3)
+    euro_dol["variacao_venda_moeda"] = (euro_dol["cotacao_venda_dol"] - euro_dol["cotacao_venda_euro"]).round(3)
 
     # Registra dados 
-    rows = df.to_dict(orient="records")
+    rows = euro_dol.to_dict(orient="records")
 
     metadata = sa.MetaData()
 

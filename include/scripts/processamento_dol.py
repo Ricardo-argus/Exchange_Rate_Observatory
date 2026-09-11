@@ -12,17 +12,17 @@ engine = sa.create_engine(CONN_STR)
 
 def process_dol_data():
     # Lê os dados da tabela bronze_euro_cambio
-    df = pd.read_sql("SELECT * FROM public.bronze_dol_cambio ORDER BY datahoracotacao", engine)
+    silver_dol = pd.read_sql("SELECT * FROM public.bronze_dol_cambio ORDER BY datahoracotacao", engine)
 
     # Calcula variações
-    df["variacao_venda"] = (df["cotacao_venda"] - df["cotacao_venda"].shift(1)).round(2)
-    df["variacao_compra"] = (df["cotacao_compra"] - df["cotacao_compra"].shift(1)).round(2)
-    df["variacao_pct_venda"] = (df["cotacao_venda"].pct_change() * 100).round(2)
-    df["variacao_pct_compra"] = (df["cotacao_compra"].pct_change() * 100).round(2)
+    silver_dol["variacao_venda"] = (silver_dol["cotacao_venda"] - silver_dol["cotacao_venda"].shift(1)).round(2)
+    silver_dol["variacao_compra"] = (silver_dol["cotacao_compra"] - silver_dol["cotacao_compra"].shift(1)).round(2)
+    silver_dol["variacao_pct_venda"] = (silver_dol["cotacao_venda"].pct_change() * 100).round(2)
+    silver_dol["variacao_pct_compra"] = (silver_dol["cotacao_compra"].pct_change() * 100).round(2)
 
-    df = df.fillna(0)  
+    silver_dol = silver_dol.fillna(0)  
 
-    rows = df.to_dict(orient="records")
+    rows = silver_dol.to_dict(orient="records")
 
     metadata = sa.MetaData()
 

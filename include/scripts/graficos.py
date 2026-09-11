@@ -17,11 +17,11 @@ def graph_py(output_dir="/opt/airflow/output_charts"):
 
     os.makedirs(output_dir, exist_ok=True)
 
-    df = pd.read_sql("SELECT * FROM public.cambio_eur_usd ORDER BY id DESC", engine)
+    exchange_rate_obj = pd.read_sql("SELECT * FROM public.cambio_eur_usd ORDER BY id DESC", engine)
 
     #Grafico de linha cotacao dol
 
-    sns.lineplot(data=df, x="data_publicacao", y="cotacao_venda_dol")
+    sns.lineplot(data=exchange_rate_obj, x="data_publicacao", y="cotacao_venda_dol")
     plt.title("Cotação de Venda do Dólar ao longo do tempo")
     plt.xticks(rotation=45)
     plt.tight_layout()
@@ -30,7 +30,7 @@ def graph_py(output_dir="/opt/airflow/output_charts"):
 
     #Histograma variacao
 
-    sns.histplot(df["variacao_compra_moeda"], bins=30, kde=True)
+    sns.histplot(exchange_rate_obj["variacao_compra_moeda"], bins=30, kde=True)
     plt.title("Distribuição da variação de compra da moeda")
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "hist_variacao.png"))
@@ -49,13 +49,13 @@ def graph_sql(output_dir="/opt/airflow/output_charts"):
         GROUP by mes
         ORDER BY mes
     """
-    df = pd.read_sql(query_sql, engine)
+    exchange_rate_obj = pd.read_sql(query_sql, engine)
 
     # Formata a coluna 'mes' para apenas Ano-Mês ou Mês/Ano
-    df["mes"] = pd.to_datetime(df["mes"]).dt.strftime("%Y-%m")
+    exchange_rate_obj["mes"] = pd.to_datetime(exchange_rate_obj["mes"]).dt.strftime("%Y-%m")
 
     # Plota o gráfico (xlabel="" remove a legenda 'mes' do rodapé)
-    ax = df.plot(x="mes", y=["media_dolar", "media_euro"], kind="bar", xlabel="")
+    ax = exchange_rate_obj.plot(x="mes", y=["media_dolar", "media_euro"], kind="bar", xlabel="")
     
     plt.title("Média mensal das cotações de venda (USD vs EUR)")
     plt.xticks(rotation=45, ha="right")

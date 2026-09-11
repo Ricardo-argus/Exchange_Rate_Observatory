@@ -12,41 +12,41 @@ engine = sa.create_engine(CONN_STR)
 
 def gold_dol_data():
     #Lê dados da tabela Silver dolar cambio
-    df = pd.read_sql("SELECT * FROM public.silver_dol_cambio ORDER BY datahoracotacao", engine)
+    gold_dol = pd.read_sql("SELECT * FROM public.silver_dol_cambio ORDER BY datahoracotacao", engine)
 
     # Garante parsing de datetime antes de extrair data e hora
-    df["datahoracotacao"] = pd.to_datetime(df["datahoracotacao"])
+    gold_dol["datahoracotacao"] = pd.to_datetime(gold_dol["datahoracotacao"])
 
     # Modificar Coluna Datahoracotacao > Data
-    df["data_publicacao"] = df["datahoracotacao"].dt.date
+    gold_dol["data_publicacao"] = gold_dol["datahoracotacao"].dt.date
 
     # Criar nova coluna para armazenar Hora
-    df["hora_publicacao"] = df["datahoracotacao"].dt.strftime("%H:%M:%S")
+    gold_dol["hora_publicacao"] = gold_dol["datahoracotacao"].dt.strftime("%H:%M:%S")
 
     # Estipular 2 casas decimais para Cotacoes
-    df['cotacao_compra'] = df['cotacao_compra'].round(2)
-    df['cotacao_venda'] =  df['cotacao_venda'].round(2)
+    gold_dol['cotacao_compra'] = gold_dol['cotacao_compra'].round(2)
+    gold_dol['cotacao_venda'] =  gold_dol['cotacao_venda'].round(2)
 
     # Arredondar variacoes para 3 casas decimais
-    df["variacao_venda"] = df["variacao_venda"].round(3)
-    df["variacao_compra"] = df["variacao_compra"].round(3)
-    df["variacao_pct_venda"] = df["variacao_pct_venda"].round(3)
-    df["variacao_pct_compra"] = df["variacao_pct_compra"].round(3)
+    gold_dol["variacao_venda"] = gold_dol["variacao_venda"].round(3)
+    gold_dol["variacao_compra"] = gold_dol["variacao_compra"].round(3)
+    gold_dol["variacao_pct_venda"] = gold_dol["variacao_pct_venda"].round(3)
+    gold_dol["variacao_pct_compra"] = gold_dol["variacao_pct_compra"].round(3)
 
     # eliminar coluna antiga
-    df = df.drop(columns=["datahoracotacao"])
+    gold_dol = gold_dol.drop(columns=["datahoracotacao"])
 
     #eliminar registros incosistentes de boletim
-    df = df.drop_duplicates(subset=["data_publicacao", "hora_publicacao"], keep="last")
+    gold_dol = gold_dol.drop_duplicates(subset=["data_publicacao", "hora_publicacao"], keep="last")
 
     # Selecionar Colunas
-    df = df[[
+    gold_dol = gold_dol[[
     "data_publicacao", "hora_publicacao", "cotacao_compra", "cotacao_venda",
     "variacao_venda", "variacao_compra", "variacao_pct_venda", "variacao_pct_compra",
     "tipoboletim"
     ]]
 
-    rows = df.to_dict(orient="records")
+    rows = gold_dol.to_dict(orient="records")
     
     metadata = sa.MetaData()
     

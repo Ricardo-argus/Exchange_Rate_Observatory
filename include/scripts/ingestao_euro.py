@@ -29,10 +29,10 @@ metadata.create_all(engine)  # cria a tabela se não existir
 def ingest_euro_data():
 
     # Carrega o Excel
-    df = pd.read_excel("/opt/airflow/excel_analyses/Advanced_Imported_Analyses.xlsm", sheet_name="Main_Macros", header=None, engine="openpyxl")
+    bronze_euro = pd.read_excel("/opt/airflow/excel_analyses/Advanced_Imported_Analyses.xlsm", sheet_name="Main_Macros", header=None, engine="openpyxl")
     
     # Coluna 'url_API'
-    url = df.iloc[24, 2]
+    url = bronze_euro.iloc[24, 2]
 
     response = requests.get(url).json()
 
