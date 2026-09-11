@@ -31,10 +31,12 @@ def ingest_data():
 
     bronze_dol = pd.read_excel("/opt/airflow/excel_analyses/Advanced_Imported_Analyses.xlsm", sheet_name="Main_Macros", header=None, engine="openpyxl")
     
-    # coluna'url_API'
-    url = bronze_dol.iloc[30, 2]
+    # coluna'url_fechamento_API'
+    url_fechamento = bronze_dol.iloc[30, 2]
 
-    response = requests.get(url).json()
+    url_abertura = bronze_dol.iloc[30, 5]
+
+    response = requests.get(url_fechamento).json()
 
     rows = []
     for item in response["value"]:
@@ -43,17 +45,33 @@ def ingest_data():
             "cotacao_venda": float(item["cotacaoVenda"]),
             "datahoracotacao": datetime.strptime(item["dataHoraCotacao"], "%Y-%m-%d %H:%M:%S.%f"),
             "tipoboletim": str(item["tipoBoletim"])
-        })
-    
+    })
+
+    # Consulta API Abertura
+    response = requests.get(url_abertura, timeout=30)
+
+    response.raise_for_status()
+
+    response = response.json()
+
+    for item in response["value"]:
+        rows.append({
+            "cotacao_compra": float(item["cotacaoCompra"]),
+            "cotacao_venda": float(item["cotacaoVenda"]),
+            "datahoracotacao": datetime.strptime(item["dataHoraCotacao"], "%Y-%m-%d %H:%M:%S.%f"),
+            "tipoboletim": str(item["tipoBoletim"])
+    })
+
+    # Junta dados abertura e fechamento
+    bronze_dol = pd.DataFrame(rows)
+
     # Carrega a tabela
     table = sa.Table("bronze_dol_cambio", sa.MetaData(), autoload_with=engine)
 
     with engine.begin() as conn:
-        # Apaga os registros antigos
-        conn.execute(sa.text("DELETE FROM bronze_dol_cambio"))
 
         # Faz o upsert (insere e atualiza se já existir)
-        stmt = insert(table).values(rows)
+        stmt = insert(table).values(bronze_dol.to_dict(orient="records"))
         stmt = stmt.on_conflict_do_update(
             index_elements=["datahoracotacao"],
             set_={
