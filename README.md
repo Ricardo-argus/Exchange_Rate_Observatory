@@ -2,7 +2,7 @@
 
 ##  Overview
 O **Observatório de Câmbio** é um projeto de análise e monitoramento de variações cambiais, integrando **Airflow** para orquestração de pipelines e **dbt (Data Build Tool)** para transformação e modelagem de dados.  
-O objetivo é fornecer insights sobre taxas de câmbio, detectar anomalias e gerar métricas consolidadas em diferentes camadas de dados (**silver** e **gold**).
+O objetivo é fornecer insights sobre taxas de câmbio, detectar anomalias e gerar métricas consolidadas em diferentes camadas de dados (**bronze**, **silver** e **gold**).
 
 ---
 
