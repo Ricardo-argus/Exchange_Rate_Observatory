@@ -8,7 +8,7 @@ O objetivo é fornecer insights sobre taxas de câmbio, detectar anomalias e ger
 
 ##  Inicialização do Projeto
 
-### Pré-requisitos
+### Stack   
 - **Python 3.9+**
 - **Apache Airflow**
 - **dbt-core**
